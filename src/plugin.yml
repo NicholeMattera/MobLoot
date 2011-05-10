@@ -1,0 +1,16 @@
+name: MobLoot
+main: net.mcbat.MobLoot.MobLoot
+version: 1.00
+website: http://mc-bat.net
+author: Steven Mattera
+description: Simple plugin for modifying the loot that drops off mobs.
+commands:
+    ml:
+        description: View and edit drops.
+        usage: /<command> <world> <mob> <item,item,...>
+    mls:
+        description: Save the config file.
+        usage: /<command>
+    mll:
+        description: Load the config file.
+        usage: /<command>    
