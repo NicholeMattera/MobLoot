@@ -11,6 +11,7 @@ import org.bukkit.util.config.Configuration;
 
 import net.mcbat.MobLoot.MobLoot;
 import net.mcbat.MobLoot.Utils.CreatureID;
+import net.mcbat.MobLoot.Utils.ItemInfo;
 
 public class ConfigManager {
 	private final MobLoot _plugin;
@@ -18,12 +19,14 @@ public class ConfigManager {
 	private final File _configFile;
 	private Configuration _config;
 
-	private final HashMap<String, HashMap<CreatureID, ArrayList<Integer>>> _worldDropTable;
+	private final HashMap<String, HashMap<CreatureID, ArrayList<ItemInfo>>> _worldDropTable;
 	
 	public ConfigManager(MobLoot plugin) {
 		_plugin = plugin;
 		_configFile = new File(_plugin.getDataFolder() + File.separator + "General.yml");
-		_worldDropTable = new HashMap<String, HashMap<CreatureID, ArrayList<Integer>>>();
+		_worldDropTable = new HashMap<String, HashMap<CreatureID, ArrayList<ItemInfo>>>();
+		
+		loadConfig();
 	}
 	
 	public void loadConfig() {
@@ -36,15 +39,7 @@ public class ConfigManager {
 			
 			while (worldIterator.hasNext()) {
 				World world = worldIterator.next();
-
-				HashMap<CreatureID, ArrayList<Integer>> dropTable = new HashMap<CreatureID, ArrayList<Integer>>();
-				
-				for (CreatureID creature : CreatureID.values()) {
-					ArrayList<Integer> creatureDrop = (ArrayList<Integer>) _config.getIntList(world.getName()+"."+creature.getName(), new ArrayList<Integer>());
-					dropTable.put(creature, creatureDrop);
-				}
-				
-				_worldDropTable.put(world.getName(), dropTable);
+				loadWorld(world.getName());
 			}
 		}
 		else
@@ -53,29 +48,37 @@ public class ConfigManager {
 	
 	public void saveConfig() {
 		_config.save();
+
+		_plugin.getMinecraftLogger().info("[MobLoot] Config saved.");
 	}
 	
-	public ArrayList<Integer> getDrop(String worldName, CreatureID creature) {
-		HashMap<CreatureID, ArrayList<Integer>> dropTable = _worldDropTable.get(worldName);
-		ArrayList<Integer> drop = dropTable.get(creature);
+	public ArrayList<ItemInfo> getDrop(String worldName, CreatureID creature) {
+		HashMap<CreatureID, ArrayList<ItemInfo>> dropTable = _worldDropTable.get(worldName);
 		
-		if (drop.size() == 0)
+		if (dropTable == null)
+			dropTable = loadWorld(worldName);
+		
+		ArrayList<ItemInfo> drop = dropTable.get(creature);
+		
+		if (drop == null || drop.size() == 0)
 			return null;
 		else
-			return dropTable.get(creature);
+			return drop;
 	}
 	
-	public void setDrop(String worldName, CreatureID creature, int[] items) {
-		HashMap<CreatureID, ArrayList<Integer>> dropTable = new HashMap<CreatureID, ArrayList<Integer>>();
-		ArrayList<Integer> itemDrops = new ArrayList<Integer>();
+	public void setDrop(String worldName, CreatureID creature, String[] items) {
+		HashMap<CreatureID, ArrayList<ItemInfo>> dropTable = new HashMap<CreatureID, ArrayList<ItemInfo>>();
+		ArrayList<String> itemDropsData = new ArrayList<String>();
+		ArrayList<ItemInfo> itemDrops = new ArrayList<ItemInfo>();
 
 		for (int i = 0; i < items.length; i++) {
-			itemDrops.add(new Integer(items[i]));
+			itemDrops.add(new ItemInfo(items[i]));
+			itemDropsData.add(items[i]);
 		}
 		
 		dropTable.put(creature, itemDrops);
 		
-		_config.setProperty(worldName+"."+creature.getName(), itemDrops);
+		_config.setProperty(worldName+"."+creature.getName(), itemDropsData);
 		_worldDropTable.put(worldName, dropTable);
 	}
 	
@@ -88,10 +91,10 @@ public class ConfigManager {
 		while (worldIterator.hasNext()) {
 			World world = worldIterator.next();
 
-			HashMap<CreatureID, ArrayList<Integer>> dropTable = new HashMap<CreatureID, ArrayList<Integer>>();
+			HashMap<CreatureID, ArrayList<ItemInfo>> dropTable = new HashMap<CreatureID, ArrayList<ItemInfo>>();
 			
 			for (CreatureID creature : CreatureID.values()) {
-				ArrayList<Integer> creatureDrop = new ArrayList<Integer>();
+				ArrayList<ItemInfo> creatureDrop = new ArrayList<ItemInfo>();
 				dropTable.put(creature, creatureDrop);
 
 				_config.setProperty(world.getName()+"."+creature.getName(), creatureDrop);
@@ -102,5 +105,25 @@ public class ConfigManager {
 
 		
 		this.saveConfig();
+	}
+	
+	private HashMap<CreatureID, ArrayList<ItemInfo>> loadWorld(String worldName) {
+		HashMap<CreatureID, ArrayList<ItemInfo>> dropTable = new HashMap<CreatureID, ArrayList<ItemInfo>>();
+		
+		for (CreatureID creature : CreatureID.values()) {
+			ArrayList<String> creatureDropData = (ArrayList<String>) _config.getStringList(worldName+"."+creature.getName(), new ArrayList<String>());
+			ArrayList<ItemInfo> creatureDrop = new ArrayList<ItemInfo>();
+			Iterator<String> creatureDropDataIterator = creatureDropData.iterator();
+			
+			while (creatureDropDataIterator.hasNext()) {
+				creatureDrop.add(new ItemInfo(creatureDropDataIterator.next()));
+			}
+			
+			dropTable.put(creature, creatureDrop);
+		}
+		
+		_worldDropTable.put(worldName, dropTable);
+
+		return dropTable;
 	}
 }
