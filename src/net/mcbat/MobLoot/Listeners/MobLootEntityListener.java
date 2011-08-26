@@ -9,10 +9,15 @@ import net.mcbat.MobLoot.MobLoot;
 import net.mcbat.MobLoot.Utils.CreatureID;
 import net.mcbat.MobLoot.Utils.ItemInfo;
 
+import org.bukkit.entity.Arrow;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.Event.Priority;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityListener;
 import org.bukkit.inventory.ItemStack;
@@ -37,8 +42,25 @@ public class MobLootEntityListener extends EntityListener {
 			return;
 				
 		LivingEntity mob = (LivingEntity) event.getEntity();
-		CreatureID creature = CreatureID.fromEntity(mob);
+		Player player = null;
+		
+		EntityDamageEvent damageEvent = mob.getLastDamageCause();
 
+		if (damageEvent instanceof EntityDamageByEntityEvent) {
+			Entity damager = ((EntityDamageByEntityEvent) damageEvent).getDamager();
+			
+			if (damager instanceof Player || damager instanceof Arrow) {
+				if (damager instanceof Arrow) {
+					if (((Arrow) damager).getShooter() instanceof Player)
+						player = (Player) ((Arrow) damager).getShooter();
+				}
+				else
+					player = (Player) damager;
+			}
+		}
+		
+		CreatureID creature = CreatureID.fromEntity(mob, (player != null)?player.getName():"");
+		
 		if (creature != null) {
 			ArrayList<ItemInfo> creatureDrop = _plugin.getConfigManager().getDrop(mob.getWorld().getName(), creature);
 			

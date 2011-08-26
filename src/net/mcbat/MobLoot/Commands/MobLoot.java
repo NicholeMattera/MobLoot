@@ -1,8 +1,5 @@
 package net.mcbat.MobLoot.Commands;
 
-import java.util.Iterator;
-import java.util.List;
-
 import net.mcbat.MobLoot.Utils.CreatureID;
 
 import org.bukkit.ChatColor;
@@ -19,53 +16,100 @@ public class MobLoot {
 	}
 	
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-		if ((_plugin.Permissions != null && _plugin.Permissions.has((Player)sender, "MobLoot.Admin.ml")) || (_plugin.Permissions == null && sender.isOp())) {
-			this.mlCommand(sender, label, args);
+		if (args.length >= 1) {
+			if (args[0].equalsIgnoreCase("set")) {
+				if (((Player) sender).hasPermission("MobLoot.Commands.set")) {
+					this.set(sender, label, args);
+				}
+				else {
+					sender.sendMessage(ChatColor.RED+"You do no have access to that command.");
+				}
+			}
+			else if (args[0].equalsIgnoreCase("load")) {
+				if (((Player) sender).hasPermission("MobLoot.Commands.load")) {
+					this.load(sender, label, args);
+				}
+				else {
+					sender.sendMessage(ChatColor.RED+"You do no have access to that command.");
+				}
+			}
+			else if (args[0].equalsIgnoreCase("save")) {
+				if (((Player) sender).hasPermission("MobLoot.Commands.save")) {
+					this.save(sender, label, args);
+				}
+				else {
+					sender.sendMessage(ChatColor.RED+"You do no have access to that command.");
+				}
+			}
+			else {
+				this.commandUsage(sender, label, "");
+			}
 		}
 		else {
-			sender.sendMessage(ChatColor.RED+"You do no have access to that command.");
+			this.commandUsage(sender, label, "");
 		}
+		
 		return true;
 	}
 	
-	private void mlCommand(CommandSender sender, String label, String[] args) {
-		if (args.length == 3) {
-			World world = _plugin.getServer().getWorld(args[0]);
+	private void set(CommandSender sender, String label, String[] args) {
+		if (args.length == 4) {
+			World world = _plugin.getServer().getWorld(args[1]);
 
 			if (world != null) {
-				CreatureID mob = CreatureID.fromName(args[1]);
+				CreatureID mob = CreatureID.fromName(args[2]);
 
 				if (mob != null) {
-					String[] items = args[2].split(",");
+					String[] items = args[3].split(",");
 
 					_plugin.getConfigManager().setDrop(world.getName(), mob, items);
-					sender.sendMessage(ChatColor.WHITE+args[1]+ChatColor.DARK_GREEN+" now drops "+ChatColor.WHITE+args[2]+ChatColor.DARK_GREEN+" in world "+ChatColor.WHITE+args[0]+ChatColor.DARK_GREEN+".");
+					sender.sendMessage(ChatColor.GREEN+"Mob "+ChatColor.WHITE+args[2].toLowerCase()+ChatColor.GREEN+" now drops "+ChatColor.WHITE+args[3].toLowerCase()+ChatColor.GREEN+" in world "+ChatColor.WHITE+args[1]+ChatColor.GREEN+".");
 				}
 				else
-					this.commandUsage(sender, label);
+					this.commandUsage(sender, label, "set");
 			}
 			else 
-				this.commandUsage(sender, label);
+				this.commandUsage(sender, label, "set");
 		}
 		else
-			this.commandUsage(sender, label);
+			this.commandUsage(sender, label, "set");
+	}
+	
+	private void load(CommandSender sender, String label, String[] args) {
+		if (args.length == 1) {
+			_plugin.getConfigManager().loadConfig();
+			sender.sendMessage(ChatColor.GREEN+"Configuration loaded.");
+		}
+		else 
+			this.commandUsage(sender, label, "load");
 	}
 
-	private void commandUsage(CommandSender sender, String label) {
-		List<World> worlds = _plugin.getServer().getWorlds();
-		Iterator<World> worldIterator = worlds.iterator();
-
-		String worldsStr = ChatColor.GRAY+"Worlds: ";
-
-		while (worldIterator.hasNext()) {
-			World world = worldIterator.next();
-
-			worldsStr += world.getName();
-			worldsStr += " ";
+	private void save(CommandSender sender, String label, String[] args) {
+		if (args.length == 1) {
+			_plugin.getConfigManager().saveConfig();
+			sender.sendMessage(ChatColor.GREEN+"Configuration saved.");
 		}
+		else this.commandUsage(sender, label, "save");
+	}
 
-		sender.sendMessage(ChatColor.RED+"Usage: /"+label+" [world] [mob] <item,item,...>");
-		sender.sendMessage(worldsStr);
-		sender.sendMessage(ChatColor.GRAY+"Mobs: Zombie PigZombie Skeleton Slime Chicken Pig Spider Creeper ElectrifiedCreeper Ghast Squid Giant Cow Sheep Wolf TamedWolf");
+	private void commandUsage(CommandSender sender, String label, String stage) {
+		if (stage.equalsIgnoreCase("set")) {
+			sender.sendMessage(ChatColor.RED+"[==== "+ChatColor.GREEN+"/"+label+" set"+ChatColor.RED+" ====]");
+			sender.sendMessage(ChatColor.GREEN+"/"+label+" set "+ChatColor.LIGHT_PURPLE+"<world> <mob> <item,item,...>"+ChatColor.GREEN+" - "+ChatColor.WHITE+"Edit mob loot.");
+		}
+		else if (stage.equalsIgnoreCase("load")) {
+			sender.sendMessage(ChatColor.RED+"[==== "+ChatColor.GREEN+"/"+label+" load"+ChatColor.RED+" ====]");
+			sender.sendMessage(ChatColor.GREEN+"/"+label+" load - "+ChatColor.WHITE+"Reload the configuration from disk.");
+		}
+		else if (stage.equalsIgnoreCase("save")) {
+			sender.sendMessage(ChatColor.RED+"[==== "+ChatColor.GREEN+"/"+label+" save"+ChatColor.RED+" ====]");
+			sender.sendMessage(ChatColor.GREEN+"/"+label+" save - "+ChatColor.WHITE+"Save the configuration to disk.");
+		}
+		else {
+			sender.sendMessage(ChatColor.RED+"[==== "+ChatColor.GREEN+"/"+label+ChatColor.RED+" ====]");
+			sender.sendMessage(ChatColor.GREEN+"/"+label+" set "+ChatColor.LIGHT_PURPLE+"<world> <mob> <item,item,...>"+ChatColor.GREEN+" - "+ChatColor.WHITE+"Edit mob loot.");
+			sender.sendMessage(ChatColor.GREEN+"/"+label+" load - "+ChatColor.WHITE+"Reload the configuration from disk.");
+			sender.sendMessage(ChatColor.GREEN+"/"+label+" save - "+ChatColor.WHITE+"Save the configuration to disk.");			
+		}
 	}
 }

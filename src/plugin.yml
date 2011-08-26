@@ -1,22 +1,27 @@
 name: MobLoot
 main: net.mcbat.MobLoot.MobLoot
-version: 2.01
-website: http://mc-bat.net
 author: Steven Mattera
-description: Simple plugin for modifying the loot that drops off mobs.
+website: http://mc-bat.net
+version: 3.00
 commands:
     mobloot:
-        description: View and edit drops.
-        aliases: [ml]
-        permission: MobLoot.Admin.ml
-        usage: /<command> <world> <mob> <item,item,...>
-    moblootsave:
-        description: Save the config file.
-        aliases: [mls]
-        permission: MobLoot.Admin.mls
-        usage: /<command>
-    moblootload:
-        description: Load the config file.
-        aliases: [mll]
-        permission: MobLoot.Admin.mll
-        usage: /<command>    
+        aliases: [ml, loot]
+        description: Commands for manipulating loot.
+        usage: |
+            /<command> set <world> <mob> <item,item,...> - Edit mob loot.
+            /<command> load - Reload the configuration from disk.
+            /<command> save - Save the configuration to disk.
+permissions:
+    mobloot.commands.*:
+        default: op
+        description: Allows use of all MobLoot commands.
+        children:
+            mobloot.commands.set: true
+            mobloot.commands.load: true
+            mobloot.commands.save: true
+    mobloot.commands.set:
+        description: Allows use of /mobloot set.
+    mobloot.commands.load:
+        description: Allows use of /mobloot load.
+    mobloot.commands.save:
+        description: Allows use of /mobloot save.
