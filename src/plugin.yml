@@ -2,7 +2,7 @@ name: MobLoot
 main: net.mcbat.MobLoot.MobLoot
 author: Steven Mattera
 website: http://mc-bat.net
-version: 3.00
+version: 3.01
 commands:
     mobloot:
         aliases: [ml, loot]
@@ -13,7 +13,6 @@ commands:
             /<command> save - Save the configuration to disk.
 permissions:
     mobloot.commands.*:
-        default: op
         description: Allows use of all MobLoot commands.
         children:
             mobloot.commands.set: true
