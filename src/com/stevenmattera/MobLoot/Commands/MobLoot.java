@@ -1,6 +1,5 @@
-package net.mcbat.MobLoot.Commands;
+package com.stevenmattera.MobLoot.Commands;
 
-import net.mcbat.MobLoot.Utils.CreatureID;
 
 import org.bukkit.ChatColor;
 import org.bukkit.World;
@@ -8,10 +7,12 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-public class MobLoot {
-	private final net.mcbat.MobLoot.MobLoot _plugin;
+import com.stevenmattera.MobLoot.Misc.CreatureID;
 
-	public MobLoot(net.mcbat.MobLoot.MobLoot plugin) {
+public class MobLoot {
+	private final com.stevenmattera.MobLoot.MobLoot _plugin;
+
+	public MobLoot(com.stevenmattera.MobLoot.MobLoot plugin) {
 		_plugin = plugin;
 	}
 	

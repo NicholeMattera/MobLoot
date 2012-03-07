@@ -1,8 +1,8 @@
 name: MobLoot
-main: net.mcbat.MobLoot.MobLoot
+main: com.stevenmattera.MobLoot.MobLoot
 author: Steven Mattera
-website: http://mc-bat.net
-version: 3.01
+website: http://stevenmattera.com
+version: 4.0
 commands:
     mobloot:
         aliases: [ml, loot]

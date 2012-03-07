@@ -1,4 +1,4 @@
-package net.mcbat.MobLoot.Config;
+package com.stevenmattera.MobLoot;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -7,17 +7,18 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.bukkit.World;
-import org.bukkit.util.config.Configuration;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
-import net.mcbat.MobLoot.MobLoot;
-import net.mcbat.MobLoot.Utils.CreatureID;
-import net.mcbat.MobLoot.Utils.ItemInfo;
+import com.stevenmattera.MobLoot.Misc.CreatureID;
+import com.stevenmattera.MobLoot.Misc.ItemInfo;
+
 
 public class ConfigManager {
 	private final MobLoot _plugin;
 	
 	private final File _configFile;
-	private Configuration _config;
+	private FileConfiguration _config;
 
 	private final HashMap<String, HashMap<CreatureID, ArrayList<ItemInfo>>> _worldDropTable;
 	
@@ -34,8 +35,13 @@ public class ConfigManager {
 			List<World> worlds = _plugin.getServer().getWorlds();
 			Iterator<World> worldIterator = worlds.iterator();
 
-			_config = new Configuration(_configFile);
-			_config.load();
+			_config = new YamlConfiguration();
+			
+			try {
+				_config.load(_configFile);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			
 			while (worldIterator.hasNext()) {
 				World world = worldIterator.next();
@@ -47,7 +53,11 @@ public class ConfigManager {
 	}
 	
 	public void saveConfig() {
-		_config.save();
+		try {
+			_config.save(_configFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 
 		_plugin.getMinecraftLogger().info("[MobLoot] Config saved.");
 	}
@@ -78,7 +88,7 @@ public class ConfigManager {
 		
 		dropTable.put(creature, itemDrops);
 		
-		_config.setProperty(worldName+"."+creature.getName(), itemDropsData);
+		_config.set(worldName+"."+creature.getName(), itemDropsData);
 		_worldDropTable.put(worldName, dropTable);
 	}
 	
@@ -86,7 +96,7 @@ public class ConfigManager {
 		List<World> worlds = _plugin.getServer().getWorlds();
 		Iterator<World> worldIterator = worlds.iterator();
 
-		_config = new Configuration(_configFile);
+		_config = new YamlConfiguration();
 
 		while (worldIterator.hasNext()) {
 			World world = worldIterator.next();
@@ -97,7 +107,7 @@ public class ConfigManager {
 				ArrayList<ItemInfo> creatureDrop = new ArrayList<ItemInfo>();
 				dropTable.put(creature, creatureDrop);
 
-				_config.setProperty(world.getName()+"."+creature.getName(), creatureDrop);
+				_config.set(world.getName()+"."+creature.getName(), creatureDrop);
 			}
 			
 			_worldDropTable.put(world.getName(), dropTable);
@@ -111,7 +121,7 @@ public class ConfigManager {
 		HashMap<CreatureID, ArrayList<ItemInfo>> dropTable = new HashMap<CreatureID, ArrayList<ItemInfo>>();
 		
 		for (CreatureID creature : CreatureID.values()) {
-			ArrayList<String> creatureDropData = (ArrayList<String>) _config.getStringList(worldName+"."+creature.getName(), new ArrayList<String>());
+			ArrayList<String> creatureDropData = (ArrayList<String>) _config.getStringList(worldName+"."+creature.getName());
 			ArrayList<ItemInfo> creatureDrop = new ArrayList<ItemInfo>();
 			Iterator<String> creatureDropDataIterator = creatureDropData.iterator();
 			

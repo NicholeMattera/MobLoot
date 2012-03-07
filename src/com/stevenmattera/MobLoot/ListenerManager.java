@@ -1,42 +1,39 @@
-package net.mcbat.MobLoot.Listeners;
+package com.stevenmattera.MobLoot;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
-import net.mcbat.MobLoot.MobLoot;
-import net.mcbat.MobLoot.Utils.CreatureID;
-import net.mcbat.MobLoot.Utils.ItemInfo;
 
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
-import org.bukkit.event.Event.Priority;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.event.entity.EntityListener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.MaterialData;
-import org.bukkit.plugin.PluginManager;
 
-public class MobLootEntityListener extends EntityListener {
+import com.stevenmattera.MobLoot.Misc.CreatureID;
+import com.stevenmattera.MobLoot.Misc.ItemInfo;
+
+public class ListenerManager implements Listener {
     private final MobLoot _plugin;
     
-    public MobLootEntityListener(MobLoot plugin) {
+    public ListenerManager(MobLoot plugin) {
     	_plugin = plugin;
-    }
-
-    public void registerEvents() {
-        PluginManager pm = _plugin.getServer().getPluginManager();
-
-        pm.registerEvent(Event.Type.ENTITY_DEATH, this, Priority.Normal, _plugin);
+    	
+    	Bukkit.getServer().getPluginManager().registerEvents(this, plugin);
     }
     
+    @EventHandler(priority = EventPriority.NORMAL)
 	public void onEntityDeath(EntityDeathEvent event) {
 		if (!(event.getEntity() instanceof LivingEntity) || event.getEntity() instanceof HumanEntity)
 			return;
@@ -59,7 +56,7 @@ public class MobLootEntityListener extends EntityListener {
 			}
 		}
 		
-		CreatureID creature = CreatureID.fromEntity(mob, (player != null)?player.getName():"");
+		CreatureID creature = CreatureID.valueOf(mob, player);
 		
 		if (creature != null) {
 			ArrayList<ItemInfo> creatureDrop = _plugin.getConfigManager().getDrop(mob.getWorld().getName(), creature);
